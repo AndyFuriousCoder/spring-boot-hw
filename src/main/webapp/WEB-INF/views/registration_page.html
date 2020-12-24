@@ -1,0 +1,35 @@
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Book shelf registration</title>
+    <meta charset="UTF-8">
+    <style>
+        #registration_form {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .registration_item {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<div id="registration_form">
+    <form method="post" th:action="@{/registration/create}" th:object="${registrationForm}">
+        <img class="registration_item" th:src="@{/images/book_icon.png}">
+        <br>
+        <input class="registration_item" type="text" placeholder="enter username" th:field="*{username}">
+        <br>
+        <input class="registration_item" type="password" placeholder="password" th:field="*{password}">
+        <br>
+        <input class="registration_item" type="submit" value="create">
+    </form>
+    <form method="get" th:action="@{/login}">
+        <input class="login_item" type="submit" value="go to login page">
+    </form>
+
+</div>
+</body>
+</html>
