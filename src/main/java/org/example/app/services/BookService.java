@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.Objects.isNull;
 import static org.springframework.util.StringUtils.isEmpty;
@@ -23,14 +22,14 @@ public class BookService {
     }
 
     public List<Book> getAllBooks() {
-        return bookRepo.retreiveAll();
+        return bookRepo.retrieveAll();
     }
 
     public boolean saveBook(Book book) {
         if (
                 isEmpty(book.getAuthor())
-                && isEmpty(book.getTitle())
-                && isNull(book.getSize())
+                        && isEmpty(book.getTitle())
+                        && isNull(book.getSize())
         ) {
             return false;
         } else
@@ -41,12 +40,12 @@ public class BookService {
         return bookRepo.removeItemById(bookIdToRemove);
     }
 
-    public boolean removeBooksByAuthor( String authorName) {
-        return bookRepo.removeItemsByAuthor(authorName);
+    public boolean removeBooksByAuthor(String authorName) {
+        return bookRepo.removeItemsByAuthor(authorName.trim());
     }
 
-    public boolean removeBooksByTitle( String title) {
-        return bookRepo.removeItemsByTitle(title);
+    public boolean removeBooksByTitle(String title) {
+        return bookRepo.removeItemsByTitle(title.trim());
     }
 
     public boolean removeBooksBySize(Integer size) {
@@ -54,20 +53,11 @@ public class BookService {
     }
 
     public List<Book> getFilteredBooks(String authorFilter, String titleFilter, Integer sizeFilter) {
-        Stream<Book> books = getAllBooks().stream();
-
-        if(!isEmpty(authorFilter)) {
-            books = books.filter(book -> book.getAuthor().equals(authorFilter));
-        }
-
-        if(!isEmpty(titleFilter)) {
-            books = books.filter(book -> book.getTitle().equals(titleFilter));
-        }
-
-        if(!isNull(sizeFilter)) {
-            books = books.filter(book -> book.getSize().equals(sizeFilter));
-        }
-
-        return books.collect(Collectors.toList());
+        return getAllBooks()
+                .stream()
+                .filter(book -> isEmpty(authorFilter) || book.getAuthor().equals(authorFilter))
+                .filter(book -> isEmpty(titleFilter) || book.getTitle().equals(titleFilter))
+                .filter(book -> isNull(sizeFilter) || book.getSize().equals(sizeFilter))
+                .collect(Collectors.toList());
     }
 }
