@@ -13,8 +13,7 @@ public class BookRepository implements ProjectRepository<Book> {
     private final Logger logger = Logger.getLogger(BookRepository.class);
     private final List<Book> repo = new ArrayList<>();
 
-    @Override
-    public List<Book> retreiveAll() {
+    public List<Book> retrieveAll() {
         return new ArrayList<>(repo);
     }
 
@@ -27,7 +26,7 @@ public class BookRepository implements ProjectRepository<Book> {
 
     @Override
     public boolean removeItemById(Integer bookIdToRemove) {
-        for (Book book : retreiveAll()) {
+        for (Book book : retrieveAll()) {
             if (book.getId().equals(bookIdToRemove)) {
                 logger.info("remove book completed: " + book);
                 return repo.remove(book);
@@ -38,25 +37,25 @@ public class BookRepository implements ProjectRepository<Book> {
 
     @Override
     public boolean removeItemsByAuthor(String authorName) {
-        retreiveAll().stream().filter(book -> book.getAuthor().equals(authorName)).forEach(book -> repo.remove(book));
+        retrieveAll().stream().filter(book -> book.getAuthor().equals(authorName)).forEach(repo::remove);
         logger.info("Books with author name: " + authorName + " were removed");
 
-        return retreiveAll().stream().anyMatch(book -> book.getAuthor().equals(authorName));
+        return retrieveAll().stream().anyMatch(book -> book.getAuthor().equals(authorName));
     }
 
     @Override
     public boolean removeItemsByTitle(String title) {
-        retreiveAll().stream().filter(book -> book.getTitle().equals(title)).forEach(book -> repo.remove(book));
+        retrieveAll().stream().filter(book -> book.getTitle().equals(title)).forEach(repo::remove);
         logger.info("Books with title: " + title + " were removed");
 
-        return retreiveAll().stream().anyMatch(book -> book.getTitle().equals(title));
+        return retrieveAll().stream().anyMatch(book -> book.getTitle().equals(title));
     }
 
     @Override
     public boolean removeItemsBySize(Integer size) {
-        retreiveAll().stream().filter(book -> book.getSize().equals(size)).forEach(book -> repo.remove(book));
+        retrieveAll().stream().filter(book -> book.getSize().equals(size)).forEach(repo::remove);
         logger.info("Books with size: " + size + " were removed");
 
-        return retreiveAll().stream().anyMatch(book -> book.getSize().equals(size));
+        return retrieveAll().stream().anyMatch(book -> book.getSize().equals(size));
     }
 }
