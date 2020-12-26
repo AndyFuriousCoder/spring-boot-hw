@@ -23,6 +23,7 @@
         <input class="registration_item" type="text" placeholder="enter username" th:field="*{username}">
         <br>
         <input class="registration_item" type="password" placeholder="password" th:field="*{password}">
+        <p th:if="${#fields.hasErrors()}">username or password can not be empty</p>
         <br>
         <input class="registration_item" type="submit" value="create">
     </form>
