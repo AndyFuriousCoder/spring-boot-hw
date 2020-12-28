@@ -67,40 +67,49 @@
         </table>
     </form>
 
-    <form method="post" th:action="@{/books/remove-by-author}">
+    <form method="post" th:action="@{/books/remove-by-author}" th:object="${authorNameToRemove}">
         <table>
             <tr>
                 <td>
-                    <input type="text" placeholder="author name" th:name="author">
+                    <input type="text" placeholder="author name" th:field="*{author}">
                 </td>
                 <td>
                     <input type="submit" value="remove">
+                </td>
+                <td th:if="${#fields.hasErrors()}">
+                    <p>Type author name to remove books</p>
                 </td>
             </tr>
         </table>
     </form>
 
-    <form method="post" th:action="@{/books/remove-by-title}">
+    <form method="post" th:action="@{/books/remove-by-title}" th:object="${titleToRemove}">
         <table>
             <tr>
                 <td>
-                    <input type="text" placeholder="book title" th:name="title">
+                    <input type="text" placeholder="book title" th:field="*{title}">
                 </td>
                 <td>
                     <input type="submit" value="remove">
+                </td>
+                <td th:if="${#fields.hasErrors()}">
+                    <p>Type title to remove books</p>
                 </td>
             </tr>
         </table>
     </form>
 
-    <form method="post" th:action="@{/books/remove-by-size}">
+    <form method="post" th:action="@{/books/remove-by-size}" th:object="${sizeToRemove}">
         <table>
             <tr>
                 <td>
-                    <input type="text" placeholder="book size" th:name="size">
+                    <input type="text" placeholder="book size" th:field="*{size}">
                 </td>
                 <td>
                     <input type="submit" value="remove">
+                </td>
+                <td th:if="${#fields.hasErrors()}">
+                    <p>Type size to remove books</p>
                 </td>
             </tr>
         </table>
