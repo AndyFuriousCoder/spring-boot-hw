@@ -1,7 +1,8 @@
 package org.example.web.controllers;
 
 import org.apache.log4j.Logger;
-import org.example.app.exceptions.EmptyFileException;
+import org.example.app.exceptions.EmptyFileUploadException;
+import org.example.app.exceptions.IncorrectFilterException;
 import org.example.app.services.BookService;
 import org.example.web.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.io.File;
+
+import static java.util.Objects.isNull;
+import static org.springframework.util.StringUtils.isEmpty;
 
 @Controller
 @RequestMapping(value = "/books")
@@ -138,8 +142,15 @@ public class BookShelfController {
             @RequestParam(value = "title") String title,
             @RequestParam(value = "size") Integer size,
             Model model
-    ) {
+    ) throws IncorrectFilterException {
+        if (isEmpty(author) && isEmpty(title) && isNull(size)) {
+            throw new IncorrectFilterException();
+        }
         model.addAttribute(ATTRIBUTE_BOOK, new Book());
+        model.addAttribute(ATTRIBUTE_BOOK_ID_TO_REMOVE, new BookIdToRemove());
+        model.addAttribute(ATTRIBUTE_AUTHOR_NAME_TO_REMOVE, new AuthorNameToRemove());
+        model.addAttribute(ATTRIBUTE_TITLE_TO_REMOVE, new TitleToRemove());
+        model.addAttribute(ATTRIBUTE_SIZE_TO_REMOVE, new SizeToRemove());
         model.addAttribute(ATTRIBUTE_BOOK_LIST, bookService.getFilteredBooks(author, title, size));
         logger.info("filter books");
         return "book_shelf";
@@ -148,7 +159,7 @@ public class BookShelfController {
     @PostMapping("/uploadFile")
     public String uploadFile(@RequestParam("file") MultipartFile file) throws Exception {
         if (file.isEmpty()) {
-            throw new EmptyFileException();
+            throw new EmptyFileUploadException();
         }
         String name = file.getOriginalFilename();
 
@@ -167,9 +178,15 @@ public class BookShelfController {
         return "redirect:/books/shelf";
     }
 
-    @ExceptionHandler(EmptyFileException.class)
-    public String handleError(Model model, EmptyFileException exception) {
-        model.addAttribute("errorMessage", exception.getMessage());
+    @ExceptionHandler(EmptyFileUploadException.class)
+    public String handleUploadFileError(Model model, EmptyFileUploadException exception) {
+        model.addAttribute("uploadErrorMessage", exception.getMessage());
+        return books(model);
+    }
+
+    @ExceptionHandler(IncorrectFilterException.class)
+    public String handleIncorrectFilterError(Model model, IncorrectFilterException exception) {
+        model.addAttribute("filterErrorMessage", exception.getMessage());
         return books(model);
     }
 }

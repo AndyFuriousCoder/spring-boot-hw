@@ -115,6 +115,22 @@
         </table>
     </form>
 
+    <form method="post" th:action="@{/books/uploadFile}" enctype="multipart/form-data">
+        <table>
+            <tr>
+                <td>
+                    <input type="file" name="file"/>
+                </td>
+                <td>
+                    <input type="submit" value="upload">
+                </td>
+                <td>
+                    <p th:text="${uploadErrorMessage}"></p>
+                </td>
+            </tr>
+        </table>
+    </form>
+
     <form method="post" th:action="@{/books/filter}">
         <table>
             <tr>
@@ -130,21 +146,8 @@
                 <td>
                     <input type="submit" value="filter">
                 </td>
-            </tr>
-        </table>
-    </form>
-
-    <form method="post" th:action="@{/books/uploadFile}" enctype="multipart/form-data">
-        <table>
-            <tr>
                 <td>
-                    <input type="file" name="file"/>
-                </td>
-                <td>
-                    <input type="submit" value="upload">
-                </td>
-                <td>
-                    <p th:text="${errorMessage}"></p>
+                    <p th:text="${filterErrorMessage}"></p>
                 </td>
             </tr>
         </table>
