@@ -6,6 +6,11 @@ import org.example.app.exceptions.IncorrectFilterException;
 import org.example.app.services.BookService;
 import org.example.web.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -14,6 +19,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 import static java.util.Objects.isNull;
 import static org.springframework.util.StringUtils.isEmpty;
@@ -28,6 +35,8 @@ public class BookShelfController {
                                 ATTRIBUTE_TITLE_TO_REMOVE = "titleToRemove",
                                 ATTRIBUTE_SIZE_TO_REMOVE = "sizeToRemove",
                                 ATTRIBUTE_BOOK_LIST = "bookList";
+
+    private final String fileStoragePath = System.getProperty("catalina.home") + File.separator + "external_uploads";
     
     private final Logger logger = Logger.getLogger(BookShelfController.class);
     private final BookService bookService;
@@ -161,21 +170,38 @@ public class BookShelfController {
         if (file.isEmpty()) {
             throw new EmptyFileUploadException();
         }
-        String name = file.getOriginalFilename();
-
-        String rootPath = System.getProperty("catalina.home");
-        File dir = new File(rootPath + File.separator + "external_uploads");
+        File dir = new File(fileStoragePath);
         if (!dir.exists()) {
             dir.mkdirs();
         }
-
-        File serverFile = new File(dir.getAbsolutePath() + File.separator + name);
-
+        File serverFile = new File(dir.getAbsolutePath() + File.separator + file.getOriginalFilename());
         file.transferTo(serverFile);
 
         logger.info("new file saved at: " + serverFile.getAbsolutePath());
 
         return "redirect:/books/shelf";
+    }
+
+    // to test this controller need to upload some file first
+    @GetMapping("/downloadFile")
+    public ResponseEntity<Resource> downloadFile(@RequestParam("file") String file) throws Exception {
+        File fileToDownload = new File(fileStoragePath + File.separator + file);
+
+        logger.info("file downloaded form: " + fileToDownload.getAbsolutePath());
+
+        HttpHeaders header = new HttpHeaders();
+        header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileToDownload.getName());
+        header.add("Cache-Control", "no-cache, no-store, must-revalidate");
+        header.add("Pragma", "no-cache");
+        header.add("Expires", "0");
+
+        InputStreamResource resource = new InputStreamResource(new FileInputStream(fileToDownload));
+
+        return ResponseEntity.ok()
+                .headers(header)
+                .contentLength(file.length())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
     }
 
     @ExceptionHandler(EmptyFileUploadException.class)
@@ -187,6 +213,12 @@ public class BookShelfController {
     @ExceptionHandler(IncorrectFilterException.class)
     public String handleIncorrectFilterError(Model model, IncorrectFilterException exception) {
         model.addAttribute("filterErrorMessage", exception.getMessage());
+        return books(model);
+    }
+
+    @ExceptionHandler(FileNotFoundException.class)
+    public String handleFileNotFoundError(Model model, FileNotFoundException exception) {
+        model.addAttribute("fileNotFoundErrorMessage", "required file does not exists");
         return books(model);
     }
 }

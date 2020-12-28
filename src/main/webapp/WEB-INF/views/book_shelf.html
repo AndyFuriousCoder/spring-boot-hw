@@ -131,6 +131,22 @@
         </table>
     </form>
 
+    <form method="get" th:action="@{/books/downloadFile}" enctype="multipart/form-data">
+        <table>
+            <tr>
+                <td>
+                    <input type="text" placeholder="file name" th:name="file"/>
+                </td>
+                <td>
+                    <input type="submit" value="download">
+                </td>
+                <td>
+                    <p th:text="${fileNotFoundErrorMessage}"></p>
+                </td>
+            </tr>
+        </table>
+    </form>
+
     <form method="post" th:action="@{/books/filter}">
         <table>
             <tr>
