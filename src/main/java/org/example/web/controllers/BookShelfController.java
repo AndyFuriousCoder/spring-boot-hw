@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.example.app.exceptions.EmptyFileUploadException;
 import org.example.app.exceptions.IncorrectFilterException;
 import org.example.app.services.BookService;
+import org.example.app.services.FileOperationsService;
 import org.example.web.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -36,14 +37,15 @@ public class BookShelfController {
                                 ATTRIBUTE_SIZE_TO_REMOVE = "sizeToRemove",
                                 ATTRIBUTE_BOOK_LIST = "bookList";
 
-    private final String fileStoragePath = System.getProperty("catalina.home") + File.separator + "external_uploads";
-    
     private final Logger logger = Logger.getLogger(BookShelfController.class);
+
     private final BookService bookService;
+    private final FileOperationsService fileOperationsService;
 
     @Autowired
-    public BookShelfController(BookService bookService) {
+    public BookShelfController(BookService bookService, FileOperationsService fileOperationsService) {
         this.bookService = bookService;
+        this.fileOperationsService = fileOperationsService;
     }
 
     @GetMapping("/shelf")
@@ -168,25 +170,23 @@ public class BookShelfController {
     @PostMapping("/uploadFile")
     public String uploadFile(@RequestParam("file") MultipartFile file) throws Exception {
         if (file.isEmpty()) {
+            logger.info("File to upload is not selected");
             throw new EmptyFileUploadException();
         }
-        File dir = new File(fileStoragePath);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-        File serverFile = new File(dir.getAbsolutePath() + File.separator + file.getOriginalFilename());
-        file.transferTo(serverFile);
-
-        logger.info("new file saved at: " + serverFile.getAbsolutePath());
-
+        String absolutePath = fileOperationsService.uploadFile(file);
+        logger.info("new file saved at: " + absolutePath);
         return "redirect:/books/shelf";
     }
 
     // to test this controller need to upload some file first
     @GetMapping("/downloadFile")
     public ResponseEntity<Resource> downloadFile(@RequestParam("file") String file) throws Exception {
-        File fileToDownload = new File(fileStoragePath + File.separator + file);
+        if (!fileOperationsService.getAvailableFileNames().contains(file)) {
+            logger.info("Requested file with name '" + file + "' does not exists");
+            throw new FileNotFoundException("File with name '" + file + "' does not exists");
+        }
 
+        File fileToDownload = fileOperationsService.getFileToDownload(file);
         logger.info("file downloaded form: " + fileToDownload.getAbsolutePath());
 
         HttpHeaders header = new HttpHeaders();
@@ -218,7 +218,7 @@ public class BookShelfController {
 
     @ExceptionHandler(FileNotFoundException.class)
     public String handleFileNotFoundError(Model model, FileNotFoundException exception) {
-        model.addAttribute("fileNotFoundErrorMessage", "required file does not exists");
+        model.addAttribute("fileNotFoundErrorMessage", exception.getMessage());
         return books(model);
     }
 }
