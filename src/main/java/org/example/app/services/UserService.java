@@ -3,6 +3,7 @@ package org.example.app.services;
 import org.apache.log4j.Logger;
 import org.example.app.services.repository.UserRepository;
 import org.example.web.dto.LoginForm;
+import org.example.web.dto.RegistrationForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,20 +27,20 @@ public class UserService {
 
     private final LoginForm root = new LoginForm("root", "123");
 
-    public boolean createUser(LoginForm loginForm) {
-        String username = loginForm.getUsername();
+    public boolean createUser(RegistrationForm registrationForm) {
+        String username = registrationForm.getUsername();
 
         if(isNull(username) || isEmpty(username)) {
             logger.info("Unable to register new user. Empty user name is not allowed");
             return  false;
         }
 
-        if(isRoot(loginForm) || nonNull(userRepository.retrieveCredentialsByUserName(username))) {
+        if(isRoot(registrationForm) || nonNull(userRepository.retrieveCredentialsByUserName(username))) {
             logger.info("Unable to register new user. User with name: " + username + " already exists");
             return  false;
         }
 
-        return userRepository.save(loginForm);
+        return userRepository.save(registrationForm);
     }
 
     public boolean verify(LoginForm loginForm) {
